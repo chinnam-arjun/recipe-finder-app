@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../styles/FoodItemsInAfter.css';
 import { useNavigate } from 'react-router-dom';
 import Loading from './Loading';
+import { spoonFetch } from '../api/spoonacular';
 
 const FoodItemsInAfter = () => {
   const Navigate = useNavigate();
@@ -29,13 +30,11 @@ const FoodItemsInAfter = () => {
         return;
       }
 
-      const res = await fetch(`${RECIPE_API}/random?number=30&include-tags=vegetarian,dessert&apiKey=${API_KEY}`);
-      if (!res.ok) throw new Error(`API error ${res.status}`);
-      const data = await res.json();
-      // cache a smaller subset to keep localStorage reasonable
-      const recipes = Array.isArray(data.recipes) ? data.recipes : [];
-      localStorage.setItem('cachedFoodItems', JSON.stringify(recipes));
-      setFoodItems(recipes);
+  const data = await spoonFetch('/random', { number: 30, 'include-tags': 'vegetarian,dessert' });
+  // cache a smaller subset to keep localStorage reasonable
+  const recipes = Array.isArray(data.recipes) ? data.recipes : [];
+  localStorage.setItem('cachedFoodItems', JSON.stringify(recipes));
+  setFoodItems(recipes);
       setLastFetched(new Date().toISOString());
       setLoading(false);
     } catch (err) {

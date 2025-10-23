@@ -45,11 +45,15 @@ const AfterLogIn = () => {
   }
 
   const handleSearch = async (query) => {
-    const res = await fetch(`${RECIPE_API}/complexSearch?query=${query}&number=10&apiKey=${API_KEY}`);
-    const data = await res.json();
-    setResults(data.results);
-    setShowResults(true);
-    //console.log(`${RECIPE_API}/complexSearch?query=${query}&apiKey=${API_KEY}`);
+    try {
+      const data = await (await import('../api/spoonacular')).spoonFetch('/complexSearch', { query, number: 10 });
+      setResults(data.results || []);
+      setShowResults(true);
+    } catch (err) {
+      console.error('Search error', err);
+      setResults([]);
+      setShowResults(true);
+    }
   }
 
   return (

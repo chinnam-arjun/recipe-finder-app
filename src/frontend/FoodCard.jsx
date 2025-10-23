@@ -1,26 +1,38 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom';
 import '../styles/FoodCard.css';
+import { spoonFetch } from '../api/spoonacular';
 
 const FoodCard = () => {
   const [foodInfo, setFoodInfo] = useState(null);
-  const {id}= useParams();
-  try {
-    const API_KEY = import.meta.env.VITE_SPOONACULAR_API_KEY;
-    const RECIPE_API = import.meta.env.VITE_SPOONACULAR_API;
-    const ApiFoodMakeInfo = async () => {
-      const res = await fetch(`${RECIPE_API}/${id}/information?apiKey=${API_KEY}&includeNutrition=true`);
-      const data = await res.json();
-      setFoodInfo(data);
-    }
-    ApiFoodMakeInfo();
-  } catch (error) {
-    alert(`fetching error ${error.message}`);
-  }
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { id } = useParams();
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await spoonFetch(`/${id}/information`, { includeNutrition: true });
+        if (mounted) setFoodInfo(data);
+      } catch (err) {
+        console.error('FoodCard fetch error', err);
+        if (mounted) setError(err.message || String(err));
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, [id]);
   return (
     <div className='recipe-details'>
       <div className='recipe-container'>
-        {foodInfo ? (
+        {loading ? (
+          <div>Loading recipe details...</div>
+        ) : foodInfo ? (
           <>
             <img src={foodInfo.image} alt={foodInfo.title} className='recipe-image' />
             <h2 className='recipe-title'>{foodInfo.title}</h2>
@@ -34,8 +46,10 @@ const FoodCard = () => {
             <h3>Instructions:</h3>
             <p className='instructions' dangerouslySetInnerHTML={{ __html: foodInfo.instructions }}></p>
           </>
+        ) : error ? (
+          <div>Error loading recipe: {error}</div>
         ) : (
-          <div>Loading recipe details...</div>
+          <div>No recipe data.</div>
         )}
       </div>
     </div>
