@@ -13,8 +13,7 @@ pipeline{
       steps { sh 'npm run lint' }
     }
     stage('build'){
-      steps { sh 'echo building',
-      sh 'echo Built!' }      
+      steps { sh 'echo building' }      
     }
     stage('Archive') {
         steps {
