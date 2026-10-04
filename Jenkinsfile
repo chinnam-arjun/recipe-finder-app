@@ -23,9 +23,17 @@ pipeline{
         }
     }
   }
-post{
-  finally{
-    sh 'echo succeeded'
-  }
-}
+  post {
+        always {
+            echo 'This will ALWAYS run, even if the build fails or aborts!'
+            cleanWs() // Example: clean up the workspace
+        }
+        success {
+            echo 'This only runs if the build succeeds.'
+        }
+        failure {
+            echo 'This only runs if the build fails.'
+        }
+    }
+
 }
